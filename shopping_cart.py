@@ -1,19 +1,32 @@
 # shopping_cart.py
 
 import os
-from dotenv import load_dotenv
-import datetime as dt
 import sys
+import datetime as dt
+from dotenv import load_dotenv
 import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+load_dotenv()
 
 file_name = "receipts/{date:%Y-%m-%d_%H-%M-%S-%f}.txt".format(date=dt.datetime.now())
 # print(file_name)
 
-df = pd.read_csv("data/products.csv")
-products = df.to_dict('records')
+scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+credentials = ServiceAccountCredentials.from_json_keyfile_name("google-credentials.json", scope)
+client = gspread.authorize(credentials)
 
+spreadsheet = client.open_by_key(os.getenv("GOOGLE_SHEET_ID"))
+sheet = spreadsheet.worksheet(os.getenv("SHEET_NAME", default="products"))
+
+df = pd.DataFrame(sheet.get_all_records())
+# df = pd.read_csv("data/products.csv")
+# print(df)
+
+products = df.to_dict('records')
 [item.update({"price_per":"item"}) for item in products]
-products.append({"id":21, "name": "Organic Bananas", "department": "fruit", "aisle": "fruits", "price": 0.79, "price_per": "pound"})
+products.append({"id":99, "name": "Organic Bananas", "department": "fruit", "aisle": "fruits", "price": 0.79, "price_per": "pound"})
 # print(products)
 
 def to_usd(my_price):
@@ -26,7 +39,7 @@ while True:
     user_input_id = input("Please input a product identifier: ").lower()
     if user_input_id != 'done':
         try:
-            product = next(item for item in products if item["id"] == int(user_input_id))
+            product = dict(next(item for item in products if item["id"] == int(user_input_id)))
             if product["price_per"] == "pound":
                 user_input_pounds = input("Please input the number of pounds: ")
                 product["price"] = product["price"] * float(user_input_pounds)
@@ -60,7 +73,6 @@ print("---------------------------------")
 subtotal = sum([item["price"] for item in user_products])
 print("SUBTOTAL: " + to_usd(subtotal))
 
-load_dotenv()
 tax = subtotal * float(os.getenv("TAX_RATE", default=.0875))
 print("TAX: " + to_usd(tax))
 

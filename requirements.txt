@@ -1,2 +1,6 @@
+#requirements.txt
 
-sendgrid==6.0.5 
+python-dotenv
+pandas
+gspread
+oauth2client
