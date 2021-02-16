@@ -26,41 +26,37 @@ products = [
     {"id":20, "name": "Pomegranate Cranberry & Aloe Vera Enrich Drink", "department": "beverages", "aisle": "juice nectars", "price": 4.25}
 ] # based on data from Instacart: https://www.instacart.com/datasets/grocery-shopping-2017
 
+[item.update({"price_per":"item"}) for item in products]
+products.append({"id":21, "name": "Organic Bananas", "department": "fruit", "aisle": "fruits", "price": 0.79, "price_per": "pound"})
+# print(products)
 
 def to_usd(my_price):
-    """
-    Converts a numeric value to usd-formatted string, for printing and display purposes.
-
-    Param: my_price (int or float) like 4000.444444
-
-    Example: to_usd(4000.444444)
-
-    Returns: $4,000.44
-    """
-    return f"${my_price:,.2f}" #> $12,000.71
+    return f"${my_price:,.2f}" 
 
 user_input = str()
-user_inputs = []
+user_input_extra = float()
+user_products = []
 while True:
     user_input = input("Please input a product identifier: ").lower()
     if user_input != 'done':
         try:
-            user_inputs.append(int(user_input))
+            product = next(item for item in products if item["id"] == int(user_input))
+            if product["price_per"] == "pound":
+                user_input_extra = input("Please input the number of pounds: ")
+                product["price"] = product["price"] * float(user_input_extra)
+            user_products.append(product)
         except:
-           print("Invalid integer! Type \"Done\" to finish checking out.") 
+            print("Invalid integer: Type \"Done\" to finish checking out.") 
     else:
         break
-# print(user_inputs)
-
-user_products = [item for item in products for user_input in user_inputs if item["id"] == user_input]
 # print(user_products)
 
 subtotal = sum([item["price"] for item in user_products])
-print('{:.2f}'.format(subtotal))
+print(to_usd(subtotal))
 
 load_dotenv()
 tax = subtotal * float(os.getenv("TAX_RATE", default=.0875))
-print('{:.2f}'.format(tax))
+print(to_usd(tax))
 
 total = subtotal + tax
-print('{:.2f}'.format(total))
+print(to_usd(total))
