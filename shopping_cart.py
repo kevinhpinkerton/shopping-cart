@@ -2,6 +2,11 @@
 
 import os
 from dotenv import load_dotenv
+import datetime
+import sys
+
+file_name = "receipts/{date:%Y-%m-%d_%H-%M-%S-%f}.txt".format(date=datetime.datetime.now())
+# print(file_name)
 
 products = [
     {"id":1, "name": "Chocolate Sandwich Cookies", "department": "snacks", "aisle": "cookies cakes", "price": 3.50},
@@ -51,6 +56,9 @@ while True:
         break
 # print(user_products)
 
+# stdoutOrigin=sys.stdout 
+# sys.stdout = open(file_name, "w")
+
 subtotal = sum([item["price"] for item in user_products])
 print(to_usd(subtotal))
 
@@ -60,3 +68,8 @@ print(to_usd(tax))
 
 total = subtotal + tax
 print(to_usd(total))
+
+# sys.stdout.close()
+# sys.stdout=stdoutOrigin
+
+# print(open(file_name, "r").read())
