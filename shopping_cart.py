@@ -1,5 +1,8 @@
 # shopping_cart.py
 
+import os
+from dotenv import load_dotenv
+
 products = [
     {"id":1, "name": "Chocolate Sandwich Cookies", "department": "snacks", "aisle": "cookies cakes", "price": 3.50},
     {"id":2, "name": "All-Seasons Salt", "department": "pantry", "aisle": "spices seasonings", "price": 4.99},
@@ -39,8 +42,7 @@ def to_usd(my_price):
 user_input = str()
 user_inputs = []
 while True:
-    print("Please input a product identifier: ", end='')
-    user_input = input().lower()
+    user_input = input("Please input a product identifier: ").lower()
     if user_input != 'done':
         try:
             user_inputs.append(int(user_input))
@@ -53,13 +55,12 @@ while True:
 user_products = [item for item in products for user_input in user_inputs if item["id"] == user_input]
 # print(user_products)
 
-subtotal = round(sum([item["price"] for item in user_products]), 2)
-print(subtotal)
+subtotal = sum([item["price"] for item in user_products])
+print('{:.2f}'.format(subtotal))
 
-tax = round(subtotal * .0875, 2)
-print(tax)
+load_dotenv()
+tax = subtotal * float(os.getenv("TAX_RATE", default=.0875))
+print('{:.2f}'.format(tax))
 
-total = round(subtotal + tax, 2)
-print(total)
-
-
+total = subtotal + tax
+print('{:.2f}'.format(total))
