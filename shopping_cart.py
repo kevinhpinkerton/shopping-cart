@@ -36,7 +36,30 @@ def to_usd(my_price):
     """
     return f"${my_price:,.2f}" #> $12,000.71
 
+user_input = str()
+user_inputs = []
+while True:
+    print("Please input a product identifier: ", end='')
+    user_input = input().lower()
+    if user_input != 'done':
+        try:
+            user_inputs.append(int(user_input))
+        except:
+           print("Invalid integer! Type \"Done\" to finish checking out.") 
+    else:
+        break
+# print(user_inputs)
 
-# TODO: write some Python code here to produce the desired output
+user_products = [item for item in products for user_input in user_inputs if item["id"] == user_input]
+# print(user_products)
 
-print(products)
+subtotal = round(sum([item["price"] for item in user_products]), 2)
+print(subtotal)
+
+tax = round(subtotal * .0875, 2)
+print(tax)
+
+total = round(subtotal + tax, 2)
+print(total)
+
+
