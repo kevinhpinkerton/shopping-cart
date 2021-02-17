@@ -43,7 +43,7 @@ while True:
                 product["price"] = product["price"] * float(input("Please input the number of pounds: "))
             user_products.append(product)
         except:
-            print("Invalid integer: Type \"Done\" to finish checking out.") 
+            print("Invalid input: Type \"Done\" to finish checking out.") 
     else:
         break
 # print(user_products)
