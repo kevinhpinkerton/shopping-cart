@@ -85,30 +85,38 @@ print("---------------------------------")
 sys.stdout.close()
 sys.stdout=stdoutOrigin
 
-file_content = open(file_name, "r").read()
-print(file_content, end='')
+file_content = open(file_name, "rb").read()
+print(file_content.decode('utf-8'), end='')
 
 user_input_email_question = str()
 while user_input_email_question not in ["yes", "no"]:
     user_input_email_question = input("Would you like your receipt emailed? (Yes/No): ").lower()
 
 if user_input_email_question == "yes":
-
-    message = Mail(
+    
+    mail = Mail(
         from_email = os.environ.get("MY_EMAIL_ADDRESS"),
         to_emails = input("Please input your email: ").lower(),
-        subject = "Your Receipt from the Green Grocery Store"
+        subject = "Your Receipt from the Green Grocery Store",
+        html_content="Attached"
+    )
+    
+    attachment = Attachment(
+        file_content = base64.b64encode(file_content).decode(),
+        file_name = file_name,
+        content_id = "attachment"
     )
 
-    message.attachment = Attachment(
-        FileContent(base64.b64encode(file_content).decode()),
-        FileName(file_name),
-        Disposition("attachment")
-    )
+    mail.add_attachment(attachment)
 
     sg_client = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY")) 
-    response = sg_client.send(message)
-    print(response.status_code, response.body, response.headers)
+    response = sg_client.send(mail)
+    if response.status_code == 202:
+        print("Email successfully sent!")
+    else:
+        print("Email failed to send.")
+    # print(response.body)
+    # print(response.headers)    
 
 print("---------------------------------")
 
