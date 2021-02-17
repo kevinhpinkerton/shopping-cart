@@ -2,22 +2,22 @@
 
 import os
 import sys
+import base64
 import datetime as dt
 from dotenv import load_dotenv
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import (Mail, Attachment, FileContent, FileName, Disposition)
 
 load_dotenv()
 
-file_name = "receipts/{date:%Y-%m-%d_%H-%M-%S-%f}.txt".format(date=dt.datetime.now())
-# print(file_name)
-
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name("google-credentials.json", scope)
-client = gspread.authorize(credentials)
+gs_client = gspread.authorize(credentials)
 
-spreadsheet = client.open_by_key(os.getenv("GOOGLE_SHEET_ID"))
+spreadsheet = gs_client.open_by_key(os.getenv("GOOGLE_SHEET_ID"))
 sheet = spreadsheet.worksheet(os.getenv("SHEET_NAME", default="products"))
 
 df = pd.DataFrame(sheet.get_all_records())
@@ -33,7 +33,6 @@ def to_usd(my_price):
     return f"${my_price:,.2f}" 
 
 user_input_id = str()
-user_input_pounds = float()
 user_products = []
 while True:
     user_input_id = input("Please input a product identifier: ").lower()
@@ -41,8 +40,7 @@ while True:
         try:
             product = dict(next(item for item in products if item["id"] == int(user_input_id)))
             if product["price_per"] == "pound":
-                user_input_pounds = input("Please input the number of pounds: ")
-                product["price"] = product["price"] * float(user_input_pounds)
+                product["price"] = product["price"] * float(input("Please input the number of pounds: "))
             user_products.append(product)
         except:
             print("Invalid integer: Type \"Done\" to finish checking out.") 
@@ -50,8 +48,11 @@ while True:
         break
 # print(user_products)
 
-# stdoutOrigin=sys.stdout 
-# sys.stdout = open(file_name, "w")
+file_name = "receipts/{date:%Y-%m-%d_%H-%M-%S-%f}.txt".format(date=dt.datetime.now())
+# print(file_name)
+
+stdoutOrigin=sys.stdout 
+sys.stdout = open(file_name, "w")
 
 print("---------------------------------")
 
@@ -81,11 +82,36 @@ print("TOTAL: " + to_usd(total))
 
 print("---------------------------------")
 
-print("THANKS, SEE YOU AGAIN SOON!")
+sys.stdout.close()
+sys.stdout=stdoutOrigin
+
+file_content = open(file_name, "r").read()
+print(file_content, end='')
+
+user_input_email_question = str()
+while user_input_email_question not in ["yes", "no"]:
+    user_input_email_question = input("Would you like your receipt emailed? (Yes/No): ").lower()
+
+if user_input_email_question == "yes":
+
+    message = Mail(
+        from_email = os.environ.get("MY_EMAIL_ADDRESS"),
+        to_emails = input("Please input your email: ").lower(),
+        subject = "Your Receipt from the Green Grocery Store"
+    )
+
+    message.attachment = Attachment(
+        FileContent(base64.b64encode(file_content).decode()),
+        FileName(file_name),
+        Disposition("attachment")
+    )
+
+    sg_client = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY")) 
+    response = sg_client.send(message)
+    print(response.status_code, response.body, response.headers)
 
 print("---------------------------------")
 
-# sys.stdout.close()
-# sys.stdout=stdoutOrigin
+print("THANKS, SEE YOU AGAIN SOON!")
 
-# print(open(file_name, "r").read())
+print("---------------------------------")
