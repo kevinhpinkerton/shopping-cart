@@ -25,7 +25,7 @@ df = pd.DataFrame(sheet.get_all_records())
 # print(df)
 
 products = df.to_dict('records')
-[item.update({"price_per":"item"}) for item in products]
+[item.update({"price_per":"item"}) for item in products if "price_per" not in item.keys()]
 products.append({"id":99, "name": "Organic Bananas", "department": "fruit", "aisle": "fruits", "price": 0.79, "price_per": "pound"})
 # print(products)
 
