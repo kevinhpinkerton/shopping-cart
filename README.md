@@ -16,6 +16,13 @@ Then navigate there from the command line (subsequent commands assume you are ru
 cd shopping-cart
 ```
 
+Use Anaconda to create and activate a new virtual environment, perhaps called "shopping-env":
+
+```sh
+conda create -n shopping-env python=3.8
+conda activate shopping-env
+```
+
 From inside your virtual environment, install package dependencies:
 
 ```sh
@@ -25,6 +32,12 @@ pip install -r requirements.txt
 > NOTE: if this command throws an error like "Could not open requirements file: [Errno 2] No such file or directory", make sure you are running it from the repository's root directory, where the requirements.txt file exists (see the initial `cd` step above)
 
 ## Setup
+
+Go [here](https://github.com/prof-rossetti/intro-to-python/blob/master/notes/python/packages/gspread.md) to get started with the Google Sheets API. 
+
+> NOTE: The Google credentials .json file will need to be named "google-credentials.json" and placed in the root directory to access the spreadsheet.
+
+Go [here](https://github.com/prof-rossetti/intro-to-python/blob/master/notes/python/packages/sendgrid.md) to get started with the SendGrid API. 
 
 In in the root directory of your local repository, create a new file called ".env", and update the contents of the ".env" file with the following:
 
